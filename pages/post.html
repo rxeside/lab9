@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta  charset="UTF-8">
+  <title>The Road Ahead.html</title>
+  <link rel="stylesheet" href="/static/css/the-road-ahead.css">
+  <link href="https://fonts.googleapis.com/css2?family=Oxygen&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lora&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <div class="header__top top">      
+      <span class="top__title">Escape.</span>
+      <nav class="top__navigation navigaton">
+        <a class="navigaton__link" href="/home">Home</a>
+        <a class="navigaton__link" href="#">Categories</a>
+        <a class="navigaton__link" href="#">About</a>
+        <a class="navigaton__link" href="#">Contact</a>
+      </nav>
+    </div> 
+    <div class="header__center top-block">
+      <h1 class="top-block__title" >{{ .Title }}</h1>
+      <p class="top-block__text">{{ .Subtitle }}</p>
+      <img class="top-block__image" src="{{ .Image }}" alt= "The Road Ahead" >  
+    </div>      
+  </header>
+  <div class="body__main"> 
+    <p class="body__text">
+      {{ .Content }}         
+    </p>
+  </div>
+  <footer class="footer">
+    <h2 class="footer__title">Stay in Touch</h2>
+    <div class="footer__search search">
+      <input type="text" placeholder="Enter your email adress" class="search__text"/>     
+      <input type="submit" value="Submit" class="search__button"/>
+    </div>
+    <div class="footer__content content">
+      <span class="content__title">Escape.</span>
+        <nav class="content__menu-footer menu-footer">
+          <a class="menu-footer__link" href="#">Home</a>
+          <a class="menu-footer__link" href="#">Categories</a>
+          <a class="menu-footer__link" href="#">About</a>
+          <a class="menu-footer__link" href="#">Contact</a>
+        </nav>
+    </div>   
+  </footer>
+</body>
+</html>

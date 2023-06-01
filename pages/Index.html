@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta  charset="UTF-8">
+  <title>Index</title>
+  <link rel="stylesheet" href="static/css/main.css">
+  <link href="https://fonts.googleapis.com/css2?family=Oxygen&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lora&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"> 
+</head>
+<body>
+  <header class="header">
+    <div class="header__top top">  
+      <span class="top__title">Escape.</span> 
+      <nav class="top__navigation navigaton">  
+        <a class="navigaton__link" href="#">Home</a>
+        <a class="navigaton__link" href="#">Categories</a>
+        <a class="navigaton__link" href="#">About</a>
+        <a class="navigaton__link" href="#">Contact</a>
+      </nav>
+    </div>
+    <div class="header__caption caption"> 
+      <h1 class="caption__title">Let's do it together.</h1> 
+      <p class="caption__text">We travel the world in search of stories. Come along for the ride.</p>
+      <input type="submit" value="View Latests Posts" class="caption__button"/>
+    </div>
+  </header>
+  <section class="section">
+    <div class="section__navigation navigaton">
+      <nav class="navigation__menu menu">
+        <a class="menu__link" href="#">Nature</a>
+        <a class="menu__link" href="#">Photography</a>
+        <a class="menu__link" href="#">Relaxation</a>
+        <a class="menu__link" href="#">Vacation</a>
+        <a class="menu__link" href="#">Travel</a>
+        <a class="menu__link" href="#">Adventure</a>
+      </nav>
+    </div> 
+    <h2 class="section__title-big-post">Featured post</h2>
+    <div class="section__big-posts big-posts">
+    {{ range .FeaturedPosts }}
+      <div class="big-posts__left-block" style="background-image: url('{{ .PostImg }}')">         
+        <h3 class="big-post__title"><a class="big-post__title-link" href="/post/{{ .PostID }}">{{ .Title }}</a></h3>
+        <p class="big-post__text">{{ .Description }}</p>
+        <div class="big-post__footer">
+          <img class="big-post__image" src="{{ .AuthorImg }}" alt= "Mat" width="26" height="26">    
+          <span class="big-post__image-text">{{ .Author }}</span>
+          <span class="big-post__image-data">{{ .PublishDate }}</span>
+        </div>
+      </div>   
+    {{ end }}
+    </div>
+    <h3 class="section__title-top">Most Recent</h3>
+    <div class="section__small-posts small-posts"> 
+      {{ range .MostRecentPosts }}
+      <div class="small-posts__item small-post">
+        <img src="{{ .PostImg }}" alt="StillStandingTall" width="296px" height="150px">
+        <div class="small-post__main-text-of-small-post main-text-of-small-post">
+          <span class="main-text-of-small-post__title"><a class="small-post__title-link" href="/post/{{ .PostID }}">{{ .Title }}</a></span>
+          <p class="main-text-of-small-post__text">{{ .Description }}</p>
+        </div>
+        <div class="small-post__footer">
+          <img class="small-post__image" src="{{ .AuthorImg }}" alt= "William" width="26" height="26">
+          <span class="small-post__image-text">{{ .Author }}</span>
+          <span class="small-post__image-data">{{ .PublishDate }}</span>
+        </div>
+      </div>  
+      {{ end }}   
+    </div>    
+  </section>   
+  <footer class="footer">
+    <h2 class="footer__title">Stay in Touch</h2>
+    <div class="footer__search search">
+      <input type="text" placeholder="Enter your email adress" class="search__text"/>     
+      <input type="submit" value="Submit" class="search__button"/>
+    </div>
+    <div class="footer__content content">
+      <span class="content__title">Escape.</span>
+        <nav class="content__menu-footer menu-footer">
+          <a class="menu-footer__link" href="#">Home</a>
+          <a class="menu-footer__link" href="#">Categories</a>
+          <a class="menu-footer__link" href="#">About</a>
+          <a class="menu-footer__link" href="#">Contact</a>
+        </nav>
+    </div>   
+  </footer>
+</body>
+</html>
