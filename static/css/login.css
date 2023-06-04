@@ -171,6 +171,7 @@ input:focus
     color: #FFFFFF;
     background: #DD783F;
     border-radius: 3px;
+    border: 0;
 }
 
 .button-style:hover

@@ -265,6 +265,25 @@ textarea:invalid {
     height: 48px;
 }
 
+.button-style
+{
+    font-family: 'Oxygen';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #FFFFFF;
+    background: #DD783F;
+    border-radius: 3px;
+    border: 0;
+}
+
+.button-style:hover
+{
+    background: #DD783F;
+    opacity: 0.8;
+}
+
 .box-show__border {
     position: relative;
     display: flex;

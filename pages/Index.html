@@ -39,7 +39,7 @@
     <h2 class="section__title-big-post">Featured post</h2>
     <div class="section__big-posts big-posts">
     {{ range .FeaturedPosts }}
-      <div class="big-posts__left-block" style="background-image: url('{{ .PostImg }}')">         
+      <div class="big-posts__left-block" style="background-image: url('{{ .ImgModifier }}')">         
         <h3 class="big-post__title"><a class="big-post__title-link" href="/post/{{ .PostID }}">{{ .Title }}</a></h3>
         <p class="big-post__text">{{ .Description }}</p>
         <div class="big-post__footer">
@@ -54,7 +54,7 @@
     <div class="section__small-posts small-posts"> 
       {{ range .MostRecentPosts }}
       <div class="small-posts__item small-post">
-        <img src="{{ .PostImg }}" alt="StillStandingTall" width="296px" height="150px">
+        <img src="{{ .ImgModifier }}" alt="StillStandingTall" width="296px" height="150px">
         <div class="small-post__main-text-of-small-post main-text-of-small-post">
           <span class="main-text-of-small-post__title"><a class="small-post__title-link" href="/post/{{ .PostID }}">{{ .Title }}</a></span>
           <p class="main-text-of-small-post__text">{{ .Description }}</p>

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -20,31 +21,53 @@ import (
 type indexPage struct {
 	Title           string
 	SubTitle        string
-	FeaturedPosts   []featuredPostData
-	MostRecentPosts []mostRecentPostData
+	FeaturedPosts   []postData
+	MostRecentPosts []postData
 }
 
-type featuredPostData struct {
-	Title       string `db:"title"`
-	Description string `db:"subtitle"`
-	PostImg     string `db:"image_url"`
-	Author      string `db:"author"`
-	AuthorImg   string `db:"author_url"`
-	PublishDate string `db:"publish_date"`
-	PostID      string `db:"post_id"`
-}
+// type featuredPostData struct {
+// 	Title       string `db:"title"`
+// 	Description string `db:"subtitle"`
+// 	PostImg     string `db:"image_url"`
+// 	Author      string `db:"author"`
+// 	AuthorImg   string `db:"author_url"`
+// 	PublishDate string `db:"publish_date"`
+// 	PostID      string `db:"post_id"`
+// }
 
-type mostRecentPostData struct {
-	Title       string `db:"title"`
-	Description string `db:"subtitle"`
-	PostImg     string `db:"image_url"`
-	Author      string `db:"author"`
-	AuthorImg   string `db:"author_url"`
-	PublishDate string `db:"publish_date"`
-	PostID      string `db:"post_id"`
-}
+// type mostRecentPostData struct {
+// 	Title       string `db:"title"`
+// 	Description string `db:"subtitle"`
+// 	PostImg     string `db:"image_url"`
+// 	Author      string `db:"author"`
+// 	AuthorImg   string `db:"author_url"`
+// 	PublishDate string `db:"publish_date"`
+// 	PostID      string `db:"post_id"`
+// }
 
 type postData struct {
+	PostID      string `db:"post_id"`
+	Title       string `db:"title"`
+	Description string `db:"subtitle"`
+	ImgModifier string `db:"image_url"`
+	Author      string `db:"author"`
+	AuthorImg   string `db:"author_url"`
+	PublishDate string `db:"publish_date"`
+}
+
+type createPostRequest struct {
+	Title           string `json:"title"`
+	Description     string `json:"description"`
+	AuthorName      string `json:"author"`
+	AuthorPhoto     string `json:"avatar"`
+	AuthorPhotoName string `json:"avatar_name"`
+	Date            string `json:"date"`
+	Image           string `json:"hero"`
+	ImageName       string `json:"hero_name"`
+	Content         string `json:"content"`
+}
+
+type postContent struct {
 	Title    string `db:"title"`
 	Subtitle string `db:"subtitle"`
 	Image    string `db:"image_url"`
@@ -53,14 +76,14 @@ type postData struct {
 
 func index(db *sqlx.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		featuredPostsData, err := featuredPosts(db)
+		posts, err := getPosts(db, 1)
 		if err != nil {
 			http.Error(w, "Internal Server Error", 500)
 			log.Println(err)
 			return
 		}
 
-		mostRecentPostsData, err := mostRecentPosts(db)
+		miniPosts, err := getPosts(db, 0)
 		if err != nil {
 			http.Error(w, "Internal Server Error", 500)
 			log.Println(err)
@@ -75,8 +98,8 @@ func index(db *sqlx.DB) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		data := indexPage{
-			FeaturedPosts:   featuredPostsData,
-			MostRecentPosts: mostRecentPostsData,
+			FeaturedPosts:   posts,
+			MostRecentPosts: miniPosts,
 		}
 
 		err = ts.Execute(w, data)
@@ -172,7 +195,6 @@ func admin(db *sqlx.DB) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func createPost(db *sqlx.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		reqData, err := io.ReadAll(r.Body)
@@ -184,6 +206,13 @@ func createPost(db *sqlx.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		var req createPostRequest
 
+		err = json.Unmarshal(reqData, &req)
+		if err != nil {
+			http.Error(w, "2Error", 500)
+			log.Println(err.Error())
+			return
+		}
+
 		authorImg, err := base64.StdEncoding.DecodeString(req.AuthorPhoto)
 		if err != nil {
 			http.Error(w, "img", 500)
@@ -191,8 +220,16 @@ func createPost(db *sqlx.DB) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fileAuthor, err := os.Create("static/img/" + req.AuthorPhotoName)
+		fmt.Println(req.AuthorPhotoName)
+
+		fileAuthor, err := os.Create("static/image/" + req.AuthorPhotoName)
+		if err != nil {
+			fmt.Println("Unable to create file:", err)
+			os.Exit(1)
+		}
+		defer fileAuthor.Close()
 		_, err = fileAuthor.Write(authorImg)
+		fmt.Println("Done.")
 
 		image, err := base64.StdEncoding.DecodeString(req.Image)
 		if err != nil {
@@ -201,19 +238,15 @@ func createPost(db *sqlx.DB) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fileImage, err := os.Create("static/img/" + req.ImageName)
-		_, err = fileImage.Write(image)
-
-		err = json.Unmarshal(reqData, &req)
+		fileImage, err := os.Create("static/image/" + req.ImageName)
 		if err != nil {
-			http.Error(w, "2Error", 500)
-			log.Println(err.Error())
-			return
+			fmt.Println("Unable to create file:", err)
+			os.Exit(1)
 		}
-
+		defer fileImage.Close()
+		_, err = fileImage.Write(image)
+		fmt.Println("Done.")
 		req.Date = formatDate(req.Date)
-
-		
 
 		err = saveOrder(db, req)
 		if err != nil {
@@ -231,13 +264,13 @@ func getPosts(db *sqlx.DB, feature int) ([]postData, error) {
 	if feature == 1 {
 		query = `
 		SELECT
-			post_id,
 			title,
 			subtitle,
-			path_image,
+			image_url,
 			author,
-			path_author_image,
-			publish_date
+			author_url,
+			publish_date,
+			post_id
 		FROM
 			post
 		WHERE featured = 1
@@ -245,13 +278,13 @@ func getPosts(db *sqlx.DB, feature int) ([]postData, error) {
 	} else if feature == 0 {
 		query = `
 		SELECT
-			post_id,
 			title,
 			subtitle,
-			path_image,
+			image_url,
 			author,
-			path_author_image,
-			publish_date
+			author_url,
+			publish_date,
+			post_id
 		FROM
 			post
 		WHERE featured = 0
@@ -264,16 +297,10 @@ func getPosts(db *sqlx.DB, feature int) ([]postData, error) {
 		return nil, err
 	}
 
-	for index, post := range posts {
-		post.PostURL = "/post/" + post.PostId
-		posts[index] = post
-	}
-
 	return posts, nil
 }
 
-
-func postByID(db *sqlx.DB, postID int) (postData, error) {
+func postByID(db *sqlx.DB, postID int) (postContent, error) {
 	const query = `
 		SELECT
 			title,
@@ -286,68 +313,15 @@ func postByID(db *sqlx.DB, postID int) (postData, error) {
 			post_id = ?
 	`
 
-	var post postData
+	var post postContent
 
 	err := db.Get(&post, query, postID)
 	if err != nil {
-		return postData{}, err
+		return postContent{}, err
 	}
 
 	return post, nil
 }
-
-func featuredPosts(db *sqlx.DB) ([]featuredPostData, error) {
-	const query = `
-		SELECT
-			title,
-			subtitle,
-			image_url,
-			author,
-			author_url,
-			publish_date,
-			post_id
-		FROM
-			post
-		WHERE featured = 1
-	` // Составляем SQL-запрос для получения записей для секции featured-posts
-
-	var posts []featuredPostData // Заранее объявляем массив с результирующей информацией
-
-	err := db.Select(&posts, query) // Делаем запрос в базу данных
-	if err != nil {                 // Проверяем, что запрос в базу данных не завершился с ошибкой
-		return nil, err
-	}
-
-	return posts, nil
-
-}
-
-func mostRecentPosts(db *sqlx.DB) ([]mostRecentPostData, error) {
-	const query = `
-		SELECT
-			title,
-			subtitle,
-			image_url,
-			author,
-			author_url,
-			publish_date,
-			post_id
-		FROM
-			post
-		WHERE featured = 0
-	` // Составляем SQL-запрос для получения записей для секции featured-posts
-
-	var most []mostRecentPostData // Заранее объявляем массив с результирующей информацией
-
-	err := db.Select(&most, query) // Делаем запрос в базу данных
-	if err != nil {                // Проверяем, что запрос в базу данных не завершился с ошибкой
-		return nil, err
-	}
-
-	return most, nil
-
-}
-
 
 func saveOrder(db *sqlx.DB, req createPostRequest) error {
 	const query = `
@@ -357,9 +331,9 @@ func saveOrder(db *sqlx.DB, req createPostRequest) error {
 			title,
 			subtitle,
 			author,
-			path_author_image,
+			author_url,
 			publish_date,
-			path_image,
+			image_url,
 			content,
 			featured
 		)
@@ -368,9 +342,9 @@ func saveOrder(db *sqlx.DB, req createPostRequest) error {
 			?,
 			?,
 			?,
-			CONCAT('static/img/', ?),
+			CONCAT('static/image/', ?),
 			?,
-			CONCAT('static/img/', ?),
+			CONCAT('/static/image/', ?),
 			?,
 			?
 		)
